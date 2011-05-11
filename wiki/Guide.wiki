@@ -1,0 +1,93 @@
+#labels Featured,Phase-Deploy
+A step-by-step guidance to apply delta debugging to isolate failure-inducing changes of regressions.
+
+<wiki:toc max_depth="2" />
+
+= Subjects Preparations =
+
+== Prepare a worked program P, a broken program P' and a test input ==
+
+A user reported a bug of findutils-4.2.18 on [http://savannah.gnu.org/bugs/?12181 Savannah]. The steps to reproduce the failure were also given:
+{{{
+$ mkdir dir
+$ ln -s dir link
+$ touch dir/file
+$ find -H link
+}}}
+
+He mentioned that the bug was not observed with findutils-4.2.15. Therefore, findutils-4.2.15(P) and findutils-4.2.18(P') were used in this experiment. Both releases can be downloaded from ftp ([http://ftp.gnu.org/gnu/findutils/]).
+
+
+== Determine relevant files and directories ==
+
+There were eight directories in the package. Only changes in files of `/find/`, `/gnulib/` and `/lib/` were failure-relevant. 
+ 
+== Check and guarantee configuration consistency between P and P’==
+
+After further examinations of files in these three directories, we find the file lists in `/find/` were the same. Moreover, we find the directory
+`/gnulib/` and `/lib/` of findutils-4.2.18 could also be used in findutils-4.2.15 and did not affect the output. Therefore, we just need to focus on changes in `/find/`.
+
+== Provide the _test_ function ==
+Delta debugging requires a _test_ function to check whether the failure occurs (*Fail*) or not (*Pass*) or whether the result is undecided (*Unsolved*). When findutils-4.2.18 fails, the output is:
+{{{
+link
+find: link: Too many levels of symbolic links 
+}}}
+while, when findutils-4.2.15 fails, the output is:
+{{{
+link
+link/file
+}}}
+Therefore, by comparing outputs, test results can be determined.
+
+= Applying Delta Debugging =
+
+== Generate changes ==
+Generate changes between directories `/find/` of findutils-4.2.15(P) and findutils-4.2.18(P'):
+{{{
+diff –NbU 0 --exclude-from=patterns.xo findutils-4.2.15/find findutils-4.2.18/find  >> changes.patch
+}}}
+Here `patterns.xo` is a file including some patterns to ignore some files or subdirectories whose base names match these patterns. In this example, the context as follows:
+{{{
+Makefile.*
+*.1
+}}}
+
+== Backup related source code ==
+First, compile the object program and backup related source code:
+{{{
+cd findutils-2.2.15;./configure 
+cd find;make
+cp -r find find_backup
+}}}
+To apply our prototype, the name of backup dir must be the name of fromDir appended the suffix "`_`backup".
+== Invoking delta debugging ==
+Go to directory 'find/experiments' and just type:
+{{{
+python dd.py
+}}}
+After several minutes, the failure-inducing change is identified and stored in a file named `isolated`.
+
+== Invoking delta debugging with grouping criterion ==
+Go to directory 'find/experiments' and just type:
+{{{
+python hierarchicalDD.py
+}}}
+After several minutes, the failure-inducing change is identified and stored in a file named `isolated`. With grouping criterion, delta debugging first works on file-level and then turns to change-level.
+
+= Explanations =
+== Configuration settings==
+You can modify configure.txt file in the experiment dir. This file is used to configure the file name about input, output and oracle, and specify the test case command to adapt for other object programs. The format as follows:
+{{{
+line1: changes.patch(system input) isolated(system output)
+line2: oracle_pass(pass output) oracle_fail(fail output)  outputfile(runtime output)
+line3: project_root_dir srcdir1 srcdir2 …; srcdir3 …
+line4: test case command
+}}}
+
+Notes: in line 3, the source dir before the semicolon will be compiled in order. Another source dir (behind the semicolon) will not be compiled.
+
+== Background execution (recommended)==
+{{{
+nohup  python dd.py > log  2>&1 &
+}}}

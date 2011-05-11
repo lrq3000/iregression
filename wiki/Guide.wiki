@@ -46,8 +46,14 @@ done
 }}}
 
 == Collecting statement coverage ==
-Use the file "getCovInfo.sh $dir" in to collect statement coverage and produce the file "covInfo`_`$dir"
+Use the file "getCovInfo.sh $dir" in to collect statement coverage and produce the file "covInfo`_`$dir".
 
+== Analyzing executed changes ==
+Go to directory 'find-a/experiment/usegcov' and just type:
+{{{
+python findExecutedChange.py
+}}}
+IDs of executed changes are found out and can be used in augmented delta debugging.
 
 == Invoking delta debugging ==
 Go to directory 'find-a/experiment' and just type:

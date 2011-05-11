@@ -2,44 +2,6 @@
 A step-by-step guidance to apply delta debugging to isolate failure-inducing changes of regressions.
 
 <wiki:toc max_depth="2" />
-
-= Subjects Preparations =
-
-== Prepare a worked program P, a broken program P' and a test input ==
-
-A user reported a bug of findutils-4.2.18 on [http://savannah.gnu.org/bugs/?12181 Savannah]. The steps to reproduce the failure were also given:
-{{{
-$ mkdir dir
-$ ln -s dir link
-$ touch dir/file
-$ find -H link
-}}}
-
-He mentioned that the bug was not observed with findutils-4.2.15. Therefore, findutils-4.2.15(P) and findutils-4.2.18(P') were used in this experiment. Both releases can be downloaded from ftp ([http://ftp.gnu.org/gnu/findutils/]).
-
-
-== Determine relevant files and directories ==
-
-There were eight directories in the package. Only changes in files of `/find/`, `/gnulib/` and `/lib/` were failure-relevant. 
- 
-== Check and guarantee configuration consistency between P and P’==
-
-After further examinations of files in these three directories, we find the file lists in `/find/` were the same. Moreover, we find the directory
-`/gnulib/` and `/lib/` of findutils-4.2.18 could also be used in findutils-4.2.15 and did not affect the output. Therefore, we just need to focus on changes in `/find/`.
-
-== Provide the _test_ function ==
-Delta debugging requires a _test_ function to check whether the failure occurs (*Fail*) or not (*Pass*) or whether the result is undecided (*Unsolved*). When findutils-4.2.18 fails, the output is:
-{{{
-link
-find: link: Too many levels of symbolic links 
-}}}
-while, when findutils-4.2.15 fails, the output is:
-{{{
-link
-link/file
-}}}
-Therefore, by comparing outputs, test results can be determined.
-
 = Applying Delta Debugging =
 
 == Generate changes ==

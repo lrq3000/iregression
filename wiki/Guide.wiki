@@ -2,7 +2,7 @@
 A step-by-step guidance to apply delta debugging to isolate failure-inducing changes of regressions.
 
 <wiki:toc max_depth="2" />
-= Applying Delta Debugging =
+= Failure-inducing Changes Identification =
 
 == Generate changes ==
 Generate changes between directories `/find/` of findutils-4.2.15(P) and findutils-4.2.18(P'):

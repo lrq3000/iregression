@@ -23,6 +23,28 @@ cd find;make
 cp -r find find_backup
 }}}
 To apply our prototype, the name of backup dir must be the name of fromDir appended the suffix "`_`backup".
+
+== Using gcov with GCC ==
+Open 'Makefile' and modify:
+{{{
+CFLAGS = -g -O2
+}}}
+as
+{{{
+CFLAGS = -g -O2 -fprofile-arcs -ftest-coverage
+}}}
+After then execute programs.
+
+== Collecting statement coverage ==
+Use following file "collect.bash" to collect coverage
+{{{
+#!/bin/bash
+ls *.c | while read line
+do
+gcov $line
+done
+}}}
+
 == Invoking delta debugging ==
 Go to directory 'find-a/experiment' and just type:
 {{{

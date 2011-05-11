@@ -35,8 +35,8 @@ CFLAGS = -g -O2 -fprofile-arcs -ftest-coverage
 }}}
 After then execute programs.
 
-== Collecting statement coverage ==
-Use following file "collect.bash" to collect coverage
+== Generate gcov files ==
+Use the following file "collect.bash" to collect coverage
 {{{
 #!/bin/bash
 ls *.c | while read line
@@ -44,6 +44,10 @@ do
 gcov $line
 done
 }}}
+
+== Collecting statement coverage ==
+Use the file "getCovInfo.sh $dir" in to collect statement coverage and produce the file "covInfo_$dir"
+
 
 == Invoking delta debugging ==
 Go to directory 'find-a/experiment' and just type:

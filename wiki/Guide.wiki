@@ -46,7 +46,7 @@ done
 }}}
 
 == Collecting statement coverage ==
-Use the file "getCovInfo.sh $dir" in to collect statement coverage and produce the file "covInfo_$dir"
+Use the file "getCovInfo.sh $dir" in to collect statement coverage and produce the file "covInfo\_$dir"
 
 
 == Invoking delta debugging ==

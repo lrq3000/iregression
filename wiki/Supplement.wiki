@@ -7,7 +7,20 @@ We use temu-1.0 to obtain a trace file named "diff.p.tr" when invoking diffutils
 {{{
 diff -u a b
 }}} 
-(for details of the command, see [http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=577832 this link]) However, vine-1.0 failed to convert the trace file into VINE intermediate representation, raising an error message 
+(for details of the command, see [http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=577832 this link]). However, vine-1.0 failed to convert the trace file into VINE intermediate representation, raising an error message 
 {{{
 Fatal error: exception Vine.VineError("label_to_addr given non address-like label")
+}}}
+
+= Test Input of libPNG =
+The regression-revealing input is 
+{{{
+pngtest bug.png
+}}}
+
+= Test Input of TCPflow =
+The regression-revealing input is 
+
+{{{
+tcpflow -r 36.pcap
 }}}

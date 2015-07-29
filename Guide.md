@@ -1,0 +1,87 @@
+A step-by-step guidance to apply delta debugging to isolate failure-inducing changes of regressions.
+
+
+# Failure-inducing Changes Identification #
+
+## Generate changes ##
+Generate changes between directories `/find/` of findutils-4.2.15(P) and findutils-4.2.18(P'):
+```
+diff –NbU 0 --exclude-from=patterns.xo findutils-4.2.15/find findutils-4.2.18/find  >> changes.patch
+```
+Here `patterns.xo` is a file including some patterns to ignore some files or subdirectories whose base names match these patterns. In this example, the context as follows:
+```
+Makefile.*
+*.1
+```
+
+## Backup related source code ##
+First, compile the object program and backup related source code:
+```
+cd findutils-2.2.15;./configure 
+cd find;make
+cp -r find find_backup
+```
+To apply our prototype, the name of backup dir must be the name of fromDir appended the suffix "`_`backup".
+
+## Using gcov with GCC ##
+Open 'Makefile' and modify:
+```
+CFLAGS = -g -O2
+```
+as
+```
+CFLAGS = -g -O2 -fprofile-arcs -ftest-coverage
+```
+After then execute programs.
+
+## Generate gcov files ##
+Use the following file "collect.bash" to collect coverage
+```
+#!/bin/bash
+ls *.c | while read line
+do
+gcov $line
+done
+```
+
+## Collecting statement coverage ##
+Use the file "getCovInfo.sh $dir" in to collect statement coverage and produce the file "covInfo`_`$dir".
+
+## Analyzing executed changes ##
+Go to directory 'find-a/experiment/usegcov' and just type:
+```
+python findExecutedChange.py
+```
+IDs of executed changes are found out and can be used in augmented delta debugging.
+
+## Invoking delta debugging ##
+Go to directory 'find-a/experiment' and just type:
+```
+python dd.py
+```
+After several minutes, the failure-inducing change is identified and stored in a file named `isolated`.
+
+## Invoking augmented delta debugging ##
+Go to directory 'find-a/experiment' and just type:
+```
+python add.py
+```
+After several minutes, the failure-inducing change is identified and stored in a file named `isolated_add`.
+
+
+# Explanations #
+## Configuration settings ##
+You can modify configure.txt file in the experiment dir. This file is used to configure the file name about input, output and oracle, and specify the test case command to adapt for other object programs. The format as follows:
+```
+line1: changes.patch(system input) isolated(system output)
+line2: oracle_pass(pass output) oracle_fail(fail output)  outputfile(runtime output)
+line3: project_root_dir srcdir1 srcdir2 …; srcdir3 …
+line4: test case command
+```
+
+Notes: in line 3, the source dir before the semicolon will be compiled in order. Another source dir (behind the semicolon) will not be compiled.
+
+## Background execution (recommended) ##
+```
+nohup  python dd.py > log  2>&1 &
+```
